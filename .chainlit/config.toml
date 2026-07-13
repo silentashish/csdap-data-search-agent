@@ -1,0 +1,17 @@
+[project]
+enable_telemetry = false
+user_env = []
+session_timeout = 3600
+cache = false
+
+[features]
+unsafe_allow_html = false
+latex = false
+
+[UI]
+name = "CSDA Data-Search Agent"
+description = "Agent-based search and download for NASA CSDA Earth-observation data"
+default_collapse_content = true
+
+[meta]
+generated_by = "0.1.0"

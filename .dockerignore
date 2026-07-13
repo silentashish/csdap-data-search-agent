@@ -1,0 +1,12 @@
+.git
+.venv
+venv
+__pycache__
+*.pyc
+.env
+.ruff_cache
+.pytest_cache
+data
+downloads
+.chainlit/translations
+.files
