@@ -47,6 +47,8 @@ services:
     environment:
       POSTGRES_HOST: postgres
       NEO4J_URI: bolt://neo4j:7687
+      # container can't use localhost for host Ollama — reach the Mac instead
+      OLLAMA_BASE_URL: http://host.docker.internal:11434/v1
     ports:
       - "8000:8000"
     volumes:

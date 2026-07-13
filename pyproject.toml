@@ -3,7 +3,7 @@ name = "csdap-agent"
 version = "0.1.0"
 description = "Agent-based data search over NASA CSDAP using LangGraph + Pydantic AI"
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.12"
 license = { text = "MIT" }
 
 dependencies = [
@@ -42,6 +42,9 @@ dev = [
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
+
+[tool.hatch.metadata]
+allow-direct-references = true
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/csdap_agent"]
