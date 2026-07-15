@@ -9,14 +9,25 @@ import os
 
 from chainlit.utils import mount_chainlit
 from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
 
 from .config import get_settings
 from .db import neo4j_store
+from .explore.ws import router as panel_router
 from .observability import configure_observability
 
 configure_observability()
 
 app = FastAPI(title="CSDAP Agent", version="0.1.0")
+
+# Panel WebSocket + config + proxies. Registered BEFORE the Chainlit mount at
+# "/" so these routes are matched ahead of the catch-all sub-app.
+app.include_router(panel_router)
+
+# Static panel front-end (map + filters + results), embedded in the Chainlit
+# sidebar via an iframe. Served same-origin so its WS/proxy calls just work.
+_panel_dir = os.path.join(os.path.dirname(__file__), "static", "panel")
+app.mount("/panel/app", StaticFiles(directory=_panel_dir, html=True), name="panel-app")
 
 
 @app.on_event("startup")

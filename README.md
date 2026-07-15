@@ -88,10 +88,61 @@ src/csdap_agent/
 └── llm/models.py     Ollama chat model + embeddings
 ```
 
+## Explore panel backend (phase 0)
+
+Natural-language queries drive a shared, per-thread `ExploreState` (filters +
+results) that both the agent and a map/filter/results panel read and write.
+
+- **Catalog → Neo4j (req #3):** vendors, product types, products and product
+  filters are fetched from the CSDA vendors API and embedded into Neo4j as a
+  `:Catalog` knowledge graph (`PRODUCED_BY` / `OF_TYPE` / `AVAILABLE_FROM` /
+  `FILTERS`). The agent's `find_datasets` tool resolves vague requests to real
+  collection slugs via vector search. Ingest:
+  ```bash
+  docker compose exec app python -c "from csdap_agent.db import neo4j_store; neo4j_store.init_schema(); print(neo4j_store.ingest_catalog())"
+  ```
+- **STAC search** (`csda/stac.py`): CQL2-JSON `POST /stac/search`, token
+  pagination, S3→CDN thumbnail rewrite, heatmap MVT tile-template + context —
+  ported from the csdap-frontend query logic.
+- **Agent tools**: `find_datasets`, `set_search_filters`, `run_data_search`,
+  `paginate_results`, `download_asset`. Each mutates `ExploreState` and
+  broadcasts over WebSocket.
+- **Sync**: panel connects to `ws://<host>/panel/ws/{thread_id}`; receives the
+  full state on connect and after every change; sends `set_filters` / `search` /
+  `paginate` / `select` / `clear_aoi` actions back. `GET /panel/config` exposes
+  the Mapbox token + STAC/thumbnail/orders URLs.
+- **Panel UI** (`static/panel/`): a standalone Mapbox-GL app (map + heatmap grid,
+  filters, results grid with thumbnails/size/cloud-cover, select + per-asset
+  download links), served at `/panel/app/` and embedded in the Chainlit right
+  sidebar via the `ExplorePanel` custom element (`public/elements/`). Toggle it
+  with the "🗺 Toggle explore panel" action. Heatmap/collections/context are
+  proxied through FastAPI (`/panel/heatmap`, `/panel/collections`,
+  `/panel/context`) to keep the browser same-origin.
+
+## Chat history & resume
+
+Past conversations are persisted in Postgres and can be reopened and continued.
+
+- Chainlit's `SQLAlchemyDataLayer` stores threads/steps → a **history sidebar**
+  appears and clicking a past chat resumes it. Requires auth (enabled) +
+  `CHAINLIT_AUTH_SECRET`.
+- The full agent message history (including tool calls / results) is stored
+  separately in `conversation_state`, keyed by thread id, so a resumed chat
+  continues with complete LLM context — not just the visible text.
+- Resume flow lives in `chainlit_app.py` (`@cl.on_chat_resume`) and
+  `db/conversation.py`.
+
+> **Schema note:** `docker/postgres/init.sql` runs only on a *fresh* Postgres
+> volume. After pulling schema changes, reset the DB volume:
+> ```bash
+> docker compose down -v && docker compose up --build
+> ```
+
 ## Notes
 
 - Earthdata credentials entered in the UI live in the Chainlit session only —
-  they are never written to disk or the database.
+  they are never written to disk or the database (re-enter them after resuming
+  a chat to download).
 - The two vector stores are intentional: Postgres/pgvector backs auth + SQL +
   document recall; Neo4j holds the STAC-item vector graph for relationship-aware
   retrieval as the project grows.

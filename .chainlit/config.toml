@@ -12,6 +12,8 @@ latex = false
 name = "CSDA Data-Search Agent"
 description = "Agent-based search and download for NASA CSDA Earth-observation data"
 default_collapse_content = true
+custom_css = "/public/panel-toggle.css"
+custom_js = "/public/panel-toggle.js"
 
 [meta]
-generated_by = "0.1.0"
+generated_by = "2.11.1"

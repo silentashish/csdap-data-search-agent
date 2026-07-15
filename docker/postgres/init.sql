@@ -40,3 +40,89 @@ CREATE TABLE IF NOT EXISTS search_history (
     result     JSONB,
     created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
+-- ===========================================================================
+-- Chainlit data layer (SQLAlchemyDataLayer). Column names are camelCase and
+-- MUST be quoted; the schema is dictated by Chainlit, do not rename.
+-- Persists threads/steps/elements so users can browse and resume past chats.
+-- ===========================================================================
+CREATE TABLE IF NOT EXISTS users (
+    "id"         UUID PRIMARY KEY,
+    "identifier" TEXT NOT NULL UNIQUE,
+    "metadata"   JSONB NOT NULL,
+    "createdAt"  TEXT
+);
+
+CREATE TABLE IF NOT EXISTS threads (
+    "id"             UUID PRIMARY KEY,
+    "createdAt"      TEXT,
+    "name"           TEXT,
+    "userId"         UUID,
+    "userIdentifier" TEXT,
+    "tags"           TEXT[],
+    "metadata"       JSONB,
+    FOREIGN KEY ("userId") REFERENCES users("id") ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS steps (
+    "id"            UUID PRIMARY KEY,
+    "name"          TEXT NOT NULL,
+    "type"          TEXT NOT NULL,
+    "threadId"      UUID NOT NULL,
+    "parentId"      UUID,
+    "streaming"     BOOLEAN NOT NULL,
+    "waitForAnswer" BOOLEAN,
+    "isError"       BOOLEAN,
+    "metadata"      JSONB,
+    "tags"          TEXT[],
+    "input"         TEXT,
+    "output"        TEXT,
+    "createdAt"     TEXT,
+    "command"       TEXT,
+    "start"         TEXT,
+    "end"           TEXT,
+    "generation"    JSONB,
+    "showInput"     TEXT,
+    "language"      TEXT,
+    "indent"        INT,
+    "defaultOpen"   BOOLEAN,
+    "modes"         JSONB
+);
+
+CREATE TABLE IF NOT EXISTS elements (
+    "id"          UUID PRIMARY KEY,
+    "threadId"    UUID,
+    "type"        TEXT,
+    "url"         TEXT,
+    "chainlitKey" TEXT,
+    "name"        TEXT NOT NULL,
+    "display"     TEXT,
+    "objectKey"   TEXT,
+    "size"        TEXT,
+    "page"        INT,
+    "language"    TEXT,
+    "forId"       UUID,
+    "mime"        TEXT,
+    "props"       JSONB
+);
+
+CREATE TABLE IF NOT EXISTS feedbacks (
+    "id"       UUID PRIMARY KEY,
+    "forId"    UUID NOT NULL,
+    "threadId" UUID NOT NULL,
+    "value"    INT NOT NULL,
+    "comment"  TEXT
+);
+
+CREATE INDEX IF NOT EXISTS steps_threadid_idx ON steps ("threadId");
+CREATE INDEX IF NOT EXISTS elements_threadid_idx ON elements ("threadId");
+CREATE INDEX IF NOT EXISTS threads_userid_idx ON threads ("userId");
+
+-- ---- Agent conversation state ----
+-- Full Pydantic AI message history (incl. tool calls) per Chainlit thread, so a
+-- resumed chat continues with complete agent context, not just visible text.
+CREATE TABLE IF NOT EXISTS conversation_state (
+    thread_id  UUID PRIMARY KEY,
+    history    JSONB NOT NULL DEFAULT '[]'::jsonb,
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);

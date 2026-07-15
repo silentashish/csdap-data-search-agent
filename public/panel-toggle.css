@@ -1,0 +1,12 @@
+/* Repositions the existing chainlit Action button (name="toggle_panel") from
+   the welcome message into a static top-right header button. The button
+   itself is still the real chainlit Action element (see panel-toggle.js) —
+   only its position is changed, so its click handler (toggle_panel action
+   callback in chainlit_app.py) keeps working unmodified. */
+.csda-map-toggle-btn {
+  position: fixed !important;
+  top: 12px;
+  right: 96px;
+  z-index: 1400;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
+}

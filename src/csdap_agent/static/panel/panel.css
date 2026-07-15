@@ -1,0 +1,90 @@
+:root {
+  --bg: #ffffff;
+  --fg: #1a1a1a;
+  --muted: #6b7280;
+  --border: #e5e7eb;
+  --accent: #1f6feb;
+  --accent-fg: #ffffff;
+  --row-hover: #f3f4f6;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0d1117; --fg: #e6edf3; --muted: #8b949e;
+    --border: #30363d; --accent: #388bfd; --row-hover: #161b22;
+  }
+}
+/* Explicit overrides win over the OS-level media query above — panel.js sets
+   data-theme from the chainlit app's own toggle (embedded, same-origin), so
+   the panel follows the in-app theme instead of the OS preference. */
+:root[data-theme="light"] {
+  --bg: #ffffff; --fg: #1a1a1a; --muted: #6b7280;
+  --border: #e5e7eb; --accent: #1f6feb; --row-hover: #f3f4f6;
+}
+:root[data-theme="dark"] {
+  --bg: #0d1117; --fg: #e6edf3; --muted: #8b949e;
+  --border: #30363d; --accent: #388bfd; --row-hover: #161b22;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-size: 13px; color: var(--fg); background: var(--bg);
+}
+#app { display: flex; flex-direction: column; height: 100vh; }
+
+/* Filters */
+#filters { padding: 8px 10px; border-bottom: 1px solid var(--border); flex: 0 0 auto; }
+#filters .row { margin-bottom: 6px; }
+#filters .row.two { display: flex; gap: 8px; }
+#filters label { display: block; font-size: 11px; color: var(--muted); }
+#filters select, #filters input[type=date] {
+  width: 100%; padding: 4px 6px; margin-top: 2px;
+  background: var(--bg); color: var(--fg); border: 1px solid var(--border); border-radius: 6px;
+}
+#filters input[type=range] { width: 100%; }
+.row.buttons { display: flex; gap: 6px; }
+button {
+  padding: 5px 10px; border: 1px solid var(--border); border-radius: 6px;
+  background: var(--bg); color: var(--fg); cursor: pointer; font-size: 12px;
+}
+button:hover:not(:disabled) { background: var(--row-hover); }
+button:disabled { opacity: 0.5; cursor: default; }
+button.primary { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); margin-left: auto; }
+button.active { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); }
+.status { font-size: 11px; color: var(--muted); margin-top: 4px; min-height: 14px; }
+.status.error { color: #e5534b; }
+
+/* Map */
+#map { flex: 1 1 40%; min-height: 180px; position: relative; }
+
+/* Results */
+#results { flex: 1 1 45%; display: flex; flex-direction: column; border-top: 1px solid var(--border); min-height: 140px; }
+#results-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 6px 10px; border-bottom: 1px solid var(--border); flex: 0 0 auto;
+}
+#results-count { font-weight: 600; font-size: 12px; }
+.results-actions { display: flex; gap: 6px; }
+#results-list { overflow-y: auto; flex: 1 1 auto; }
+
+.item {
+  display: flex; gap: 8px; padding: 8px 10px; border-bottom: 1px solid var(--border);
+  align-items: flex-start;
+}
+.item:hover { background: var(--row-hover); }
+.item input[type=checkbox] { margin-top: 4px; }
+.item .thumb {
+  width: 44px; height: 44px; border-radius: 6px; object-fit: cover;
+  background: var(--row-hover); flex: 0 0 auto;
+}
+.item .meta { flex: 1 1 auto; min-width: 0; }
+.item .id { font-weight: 600; font-size: 12px; word-break: break-all; }
+.item .sub { color: var(--muted); font-size: 11px; margin-top: 2px; }
+.item .assets { margin-top: 4px; display: none; }
+.item.expanded .assets { display: block; }
+.asset-row { display: flex; justify-content: space-between; gap: 6px; padding: 2px 0; font-size: 11px; }
+.asset-row a { color: var(--accent); text-decoration: none; }
+.asset-row a:hover { text-decoration: underline; }
+.chev { cursor: pointer; color: var(--muted); font-size: 11px; user-select: none; }
+.empty { padding: 20px; text-align: center; color: var(--muted); }

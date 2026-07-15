@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>CSDA Explore Panel</title>
+  <link href="https://api.mapbox.com/mapbox-gl-js/v3.7.0/mapbox-gl.css" rel="stylesheet" />
+  <link href="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-draw/v1.4.3/mapbox-gl-draw.css" rel="stylesheet" />
+  <link href="./panel.css" rel="stylesheet" />
+</head>
+<body>
+  <div id="app">
+    <!-- Filters -->
+    <section id="filters">
+      <div class="row">
+        <label>Collection
+          <select id="f-collection"><option value="">— select —</option></select>
+        </label>
+      </div>
+      <div class="row two">
+        <label>Start <input type="date" id="f-start" /></label>
+        <label>End <input type="date" id="f-end" /></label>
+      </div>
+      <div class="row">
+        <label>Max cloud cover: <span id="cc-val">100</span>%
+          <input type="range" id="f-cloud" min="0" max="100" value="100" />
+        </label>
+      </div>
+      <div class="row buttons">
+        <button id="btn-draw" title="Draw a bounding box on the map">▭ Draw AOI</button>
+        <button id="btn-clear-aoi" title="Clear the drawn area">✕ AOI</button>
+        <button id="btn-search" class="primary">Search</button>
+      </div>
+      <div id="status" class="status"></div>
+    </section>
+
+    <!-- Map -->
+    <section id="map"></section>
+
+    <!-- Results -->
+    <section id="results">
+      <div id="results-header">
+        <span id="results-count">No results</span>
+        <div class="results-actions">
+          <button id="btn-prev" disabled>‹ Prev</button>
+          <button id="btn-next" disabled>Next ›</button>
+        </div>
+      </div>
+      <div id="results-list"></div>
+    </section>
+  </div>
+
+  <script src="https://api.mapbox.com/mapbox-gl-js/v3.7.0/mapbox-gl.js"></script>
+  <script src="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-draw/v1.4.3/mapbox-gl-draw.js"></script>
+  <script src="./panel.js"></script>
+</body>
+</html>

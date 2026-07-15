@@ -26,6 +26,10 @@ dependencies = [
     "psycopg[binary,pool]>=3.2",
     "pgvector>=0.3",
     "neo4j>=5.24",
+    # Chainlit data layer (chat persistence + resume) needs async SQLAlchemy
+    "asyncpg>=0.29",
+    "sqlalchemy[asyncio]>=2.0",
+    "greenlet>=3.0",
     # CSDA / STAC
     "csda-client @ git+https://github.com/nasa-impact/csda-client",
     "pystac-client>=0.8",

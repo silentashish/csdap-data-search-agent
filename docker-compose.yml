@@ -4,16 +4,16 @@ services:
     container_name: csdap-postgres
     restart: unless-stopped
     environment:
-      POSTGRES_DB: ${POSTGRES_DB:-csdap}
-      POSTGRES_USER: ${POSTGRES_USER:-csdap}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-csdap_dev_password}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     ports:
       - "5432:5432"
     volumes:
       - pg_data:/var/lib/postgresql/data
       - ./docker/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-csdap} -d ${POSTGRES_DB:-csdap}"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -23,7 +23,7 @@ services:
     container_name: csdap-neo4j
     restart: unless-stopped
     environment:
-      NEO4J_AUTH: ${NEO4J_USER:-neo4j}/${NEO4J_PASSWORD:-neo4j_dev_password}
+      NEO4J_AUTH: ${NEO4J_USER}/${NEO4J_PASSWORD}
       NEO4J_PLUGINS: '["apoc"]'
       NEO4J_dbms_security_procedures_unrestricted: apoc.*,db.*
     ports:
@@ -49,10 +49,14 @@ services:
       NEO4J_URI: bolt://neo4j:7687
       # container can't use localhost for host Ollama — reach the Mac instead
       OLLAMA_BASE_URL: http://host.docker.internal:11434/v1
+      # where Chainlit looks for public/ (custom elements) and .chainlit/
+      CHAINLIT_APP_ROOT: /app
     ports:
       - "8000:8000"
     volumes:
       - ./src:/app/src
+      - ./public:/app/public
+      - ./.chainlit/config.toml:/app/.chainlit/config.toml
       - downloads:/data/downloads
     extra_hosts:
       # lets the container reach Ollama running on the host machine
