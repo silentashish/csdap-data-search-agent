@@ -3,6 +3,15 @@
 An agent that searches and downloads NASA **CSDA** (Commercial Smallsat Data
 Acquisition) Earth-observation data through natural-language chat.
 
+> **Personal project.** A prototype I built on my own, using only public catalogue
+> metadata. It is not the NASA IMPACT production system. Case study:
+> [silentashish.com/projects/csda-data-search-agent-with-knowledge-graph](https://www.silentashish.com/projects/csda-data-search-agent-with-knowledge-graph)
+> (live once published).
+
+![The chat UI answering "Find optical satellite imagery over the Willamette Valley, Oregon from August 2024 with low cloud cover": the agent reports 20 Planet scenes with 0% cloud cover, with its tool steps find_datasets, set_search_filters and run_data_search listed below the reply.](docs/screenshots/chat-search.webp)
+
+*A local run against the public CSDA catalogue (2026-09-23). Each tool call is shown as a step.*
+
 ## Stack
 
 | Concern            | Choice                                                        |
@@ -18,15 +27,27 @@ Acquisition) Earth-observation data through natural-language chat.
 
 ## Architecture
 
+```mermaid
+flowchart TB
+  U["Chat UI (Chainlit on FastAPI)"] --> G["LangGraph graph"]
+  G --> A["Pydantic AI agent"]
+  A -->|find_datasets| N["Neo4j catalogue graph with vector index"]
+  A -->|set_search_filters, run_data_search, paginate_results| ES["Per-thread explore state"]
+  ES -->|CQL2-JSON search| STAC["CSDA STAC API"]
+  ES <-->|WebSocket| M["Map and results panel"]
+  A -->|download_asset| C["csda-client with the user's Earthdata login"]
+  A --> PG["Postgres and pgvector: users, threads, agent history"]
+  A --> L["Ollama: chat model and embeddings"]
 ```
-Browser ──► FastAPI ──► Chainlit UI ──► LangGraph graph ──► Pydantic AI agent
-                                                             │  tools:
-                                                             │   • list_collections   (STAC)
-                                                             │   • search_stac         (STAC)
-                                                             │   • download_asset      (csda-client, Earthdata OAuth)
-                                                             │   • semantic_recall     (pgvector)
-        Postgres (auth + pgvector)   Neo4j (vector index)   Ollama (LLM + embeddings)
-```
+
+The agent's tools (`src/csdap_agent/agent/agent.py`):
+
+| Tool | What it does |
+| --- | --- |
+| `find_datasets` | Embeds the request and searches the catalogue graph in Neo4j; returns real collection slugs with scores |
+| `set_search_filters` | Changes the shared explore state (collection, dates, bbox, cloud cover, product types) |
+| `run_data_search` / `paginate_results` | Runs the STAC search with the current filters; results appear in the panel |
+| `download_asset` | Downloads through `csda-client` with the Earthdata login entered in the session |
 
 ## Quick start
 
@@ -138,6 +159,24 @@ Past conversations are persisted in Postgres and can be reopened and continued.
 > docker compose down -v && docker compose up --build
 > ```
 
+## Tests
+
+```bash
+uv sync --extra dev && PYTHONPATH=src uv run pytest
+```
+
+The tests cover configuration and password hashing. The agent, its tools and the STAC client have no automated
+tests yet.
+
+## Known limitations
+
+- No evaluation set: dataset resolution and the filters the agent sets have no measured accuracy yet.
+- The three performance changes in [`ADR/0001`](ADR/0001-improve-data-search-performance.md) (async STAC client, no
+  exact counts, Neo4j vector pre-filtering) are proposed, not implemented.
+- The map panel needs a Mapbox token (`MAPBOX_TOKEN`). Without one, the chat and search still work.
+- `scripts/` isn't mounted into the app container. Copy it in before running `create_user.py`:
+  `docker cp scripts csdap-app:/app/scripts`, then run it with `docker compose exec -e PYTHONPATH=/app/src app python scripts/create_user.py …`.
+
 ## Notes
 
 - Earthdata credentials entered in the UI live in the Chainlit session only —
@@ -148,3 +187,9 @@ Past conversations are persisted in Postgres and can be reopened and continued.
   retrieval as the project grows.
 - `csda-client` has no search method, so search runs against the CSDA STAC API;
   authenticated download goes through `csda-client`'s Earthdata OAuth flow.
+
+## Screenshots
+
+| Desktop | Mobile (390 px) |
+| --- | --- |
+| ![Chat reply with the agent's tool steps, desktop](docs/screenshots/chat-search.webp) | ![The same conversation at phone width](docs/screenshots/chat-search-mobile.webp) |
