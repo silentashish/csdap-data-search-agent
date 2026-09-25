@@ -1,8 +1,7 @@
 """CSDA STAC API client: item search, heatmap grid URLs, thumbnail rewrite.
 
-Ported from the csdap-frontend query logic (components/explore/utils.ts,
-redux/search-results.js). Search uses CQL2-JSON; the heatmap is served as
-Mapbox vector tiles the panel map consumes directly.
+Search uses CQL2-JSON; the heatmap is served as Mapbox vector tiles the
+panel map consumes directly.
 """
 
 from __future__ import annotations
