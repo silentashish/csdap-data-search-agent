@@ -14,7 +14,7 @@ from pydantic import BaseModel, Field
 
 
 class ExploreFilters(BaseModel):
-    """Search filters. Mirrors the csdap-frontend filter state (simplified)."""
+    """Search filters for the CSDA STAC search."""
 
     collection_slug: str | None = None          # vendor slug -> STAC `collection eq`
     product_type: str | None = None             # product-type name (informational)
