@@ -123,8 +123,7 @@ results) that both the agent and a map/filter/results panel read and write.
   docker compose exec app python -c "from csdap_agent.db import neo4j_store; neo4j_store.init_schema(); print(neo4j_store.ingest_catalog())"
   ```
 - **STAC search** (`csda/stac.py`): CQL2-JSON `POST /stac/search`, token
-  pagination, S3→CDN thumbnail rewrite, heatmap MVT tile-template + context —
-  ported from the csdap-frontend query logic.
+  pagination, S3→CDN thumbnail rewrite, heatmap MVT tile-template + context.
 - **Agent tools**: `find_datasets`, `set_search_filters`, `run_data_search`,
   `paginate_results`, `download_asset`. Each mutates `ExploreState` and
   broadcasts over WebSocket.
